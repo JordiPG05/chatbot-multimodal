@@ -2,19 +2,51 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.vectorstores import FAISS
 
-def extract_pdf(query):
-    loader = PyPDFLoader("src/data/DEEP_LEARNING_chapter_1.pdf")
+class PDFExtractor:
+    def __init__(self):
+        """
+        Initializes a new instance of the class.
 
-    pages = loader.load_and_split()
+        This constructor initializes the object with the following attributes:
+        - loader: A PyPDFLoader object that loads and splits the PDF file located at "src/data/DEEP_LEARNING_chapter_1.pdf".
+        - pages: A list of pages extracted from the PDF file.
+        - embeddings: An OllamaEmbeddings object that uses the "llama3" model for embedding.
+        - db: A FAISS object that creates a vector store from the specified documents and embeddings.
+        - retirver: A retriever object that uses the FAISS vector store for retrieval.
 
-    embeddings = OllamaEmbeddings(model="llama3")
+        Parameters:
+        None
 
-    db = FAISS.from_documents(pages[18:25], embeddings)
-    
-    retirver = db.as_retriever()
+        Returns:
+        None
+        """
+        self.loader = PyPDFLoader("src/data/DEEP_LEARNING_chapter_1.pdf")
 
-    docs = retirver.invoke(query)
-    
-    return docs
+        self.pages = self.loader.load_and_split()
 
-# "What algotithm is used to separate spam e-mail?"
+        self.embeddings = OllamaEmbeddings(model="llama3")
+
+        self.db = FAISS.from_documents(documents=self.pages[18:25],
+                                embedding=self.embeddings)
+        
+        self.retirver = self.db.as_retriever()
+
+
+    def extract_pdf(self,query):
+        """
+        Retrieves documents from the PDF vector store based on the given query.
+
+        Args:
+            query (str): The query to search for in the PDF vector store.
+
+        Returns:
+            list: A list of documents retrieved from the PDF vector store.
+        """
+        # Invoke the retriever object to retrieve documents based on the query
+        docs = self.retirver.invoke(query)
+        
+        return docs
+
+
+# "What is figure 1.1?"
+# "what is this book about?"
